@@ -4,6 +4,8 @@
   "homepage": "https://nunocastro805.github.io/Projeto-imobili-rio-Leonildo-almeida",
   "private": true,
   "dependencies": {
+    "@sentry/react": "^10.12.0",
+    "@sentry/tracing": "^7.120.4",
     "react": "18.2.0",
     "react-calendar": "^6.0.0",
     "react-dom": "18.2.0",
