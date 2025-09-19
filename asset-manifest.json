@@ -1,13 +1,13 @@
 {
   "files": {
     "main.css": "/Projeto-imobili-rio-Leonildo-almeida/static/css/main.fed4618d.css",
-    "main.js": "/Projeto-imobili-rio-Leonildo-almeida/static/js/main.57660264.js",
+    "main.js": "/Projeto-imobili-rio-Leonildo-almeida/static/js/main.2dee2764.js",
     "index.html": "/Projeto-imobili-rio-Leonildo-almeida/index.html",
     "main.fed4618d.css.map": "/Projeto-imobili-rio-Leonildo-almeida/static/css/main.fed4618d.css.map",
-    "main.57660264.js.map": "/Projeto-imobili-rio-Leonildo-almeida/static/js/main.57660264.js.map"
+    "main.2dee2764.js.map": "/Projeto-imobili-rio-Leonildo-almeida/static/js/main.2dee2764.js.map"
   },
   "entrypoints": [
     "static/css/main.fed4618d.css",
-    "static/js/main.57660264.js"
+    "static/js/main.2dee2764.js"
   ]
 }
