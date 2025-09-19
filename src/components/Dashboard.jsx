@@ -5,7 +5,7 @@ import 'react-calendar/dist/Calendar.css';
 import AdminSettings from './AdminSettings';
 import ListingForm from './ListingForm';
 
-export default function Dashboard({ role, listings, leads, contactInfo, onUpdateContact, accessCodes, onUpdateAccessCodes, onCreate, onDelete, onDeleteLead }){
+export default function Dashboard({ role, listings, leads, contactInfo, onUpdateContact, accessCodes, onUpdateAccessCodes, onCreate, onDelete, onDeleteLead, onImportData }){
   const [activeTab, setActiveTab] = useState('dashboard');
   const [events, setEvents] = useState(() => {
     const savedEvents = localStorage.getItem('calendarEvents');
@@ -135,6 +135,10 @@ export default function Dashboard({ role, listings, leads, contactInfo, onUpdate
     const data = {
       events: events,
       notes: notes,
+      listings: listings,
+      leads: leads,
+      contactInfo: contactInfo,
+      accessCodes: accessCodes,
       exportedAt: new Date().toISOString(),
       version: '1.0'
     };
@@ -158,14 +162,9 @@ export default function Dashboard({ role, listings, leads, contactInfo, onUpdate
         try {
           const importedData = JSON.parse(e.target.result);
 
-          if (importedData.events && Array.isArray(importedData.events)) {
-            setEvents(importedData.events);
-            localStorage.setItem('calendarEvents', JSON.stringify(importedData.events));
-          }
-
-          if (importedData.notes && Array.isArray(importedData.notes)) {
-            setNotes(importedData.notes);
-            localStorage.setItem('adminNotes', JSON.stringify(importedData.notes));
+          // Use the callback to import all data types
+          if (onImportData) {
+            onImportData(importedData);
           }
 
           alert('Dados importados com sucesso!');

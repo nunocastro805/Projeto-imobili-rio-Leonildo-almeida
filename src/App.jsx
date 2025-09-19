@@ -148,6 +148,35 @@ export default function App(){
     setAccessCodes(newCodes);
   }
 
+  function handleImportData(importedData){
+    if (importedData.events && Array.isArray(importedData.events)) {
+      localStorage.setItem('calendarEvents', JSON.stringify(importedData.events));
+    }
+
+    if (importedData.notes && Array.isArray(importedData.notes)) {
+      localStorage.setItem('adminNotes', JSON.stringify(importedData.notes));
+    }
+
+    if (importedData.listings && Array.isArray(importedData.listings)) {
+      setListings(importedData.listings);
+    }
+
+    if (importedData.leads && Array.isArray(importedData.leads)) {
+      setLeads(importedData.leads);
+    }
+
+    if (importedData.contactInfo) {
+      setContactInfo(importedData.contactInfo);
+    }
+
+    if (importedData.accessCodes) {
+      setAccessCodes(importedData.accessCodes);
+    }
+
+    // Force a page reload to refresh all data
+    window.location.reload();
+  }
+
   const visible = useMemo(() => {
     return listings.filter(l => {
       const matchesFilter = filter === 'todos' || l.type === filter;
@@ -279,6 +308,7 @@ export default function App(){
                 onCreate={handleCreate}
                 onDelete={handleDelete}
                 onDeleteLead={handleDeleteLead}
+                onImportData={handleImportData}
               />
             ) : null}
           </aside>
