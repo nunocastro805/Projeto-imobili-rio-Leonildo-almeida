@@ -130,6 +130,53 @@ export default function Dashboard({ role, listings, leads, contactInfo, onUpdate
     }
   };
 
+  // Export/Import functions
+  const exportData = () => {
+    const data = {
+      events: events,
+      notes: notes,
+      exportedAt: new Date().toISOString(),
+      version: '1.0'
+    };
+
+    const dataStr = JSON.stringify(data, null, 2);
+    const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+
+    const exportFileDefaultName = `dashboard-data-${new Date().toISOString().split('T')[0]}.json`;
+
+    const linkElement = document.createElement('a');
+    linkElement.setAttribute('href', dataUri);
+    linkElement.setAttribute('download', exportFileDefaultName);
+    linkElement.click();
+  };
+
+  const importData = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        try {
+          const importedData = JSON.parse(e.target.result);
+
+          if (importedData.events && Array.isArray(importedData.events)) {
+            setEvents(importedData.events);
+            localStorage.setItem('calendarEvents', JSON.stringify(importedData.events));
+          }
+
+          if (importedData.notes && Array.isArray(importedData.notes)) {
+            setNotes(importedData.notes);
+            localStorage.setItem('adminNotes', JSON.stringify(importedData.notes));
+          }
+
+          alert('Dados importados com sucesso!');
+        } catch (error) {
+          alert('Erro ao importar dados. Verifique se o arquivo é válido.');
+        }
+      };
+      reader.readAsText(file);
+    }
+  };
+
   // Notes functions
   const addNote = () => {
     if (newNote.trim()) {
@@ -280,6 +327,66 @@ export default function Dashboard({ role, listings, leads, contactInfo, onUpdate
               <FaTachometerAlt style={{marginRight: '0.5rem', color: '#2563eb'}} />
               Painel - {role}
             </h2>
+
+            {/* Data Management */}
+            <div style={{marginBottom: '2rem', padding: '1rem', backgroundColor: '#f0f9ff', borderRadius: '0.5rem', border: '1px solid #0ea5e9'}}>
+              <h4 style={{fontSize: '1rem', fontWeight: '500', color: '#0c4a6e', marginBottom: '0.75rem', display: 'flex', alignItems: 'center'}}>
+                <FaFileAlt style={{marginRight: '0.5rem'}} />
+                Gerenciamento de Dados
+              </h4>
+              <div style={{display: 'flex', gap: '1rem', flexWrap: 'wrap'}}>
+                <button
+                  onClick={exportData}
+                  style={{
+                    padding: '0.5rem 1rem',
+                    backgroundColor: '#059669',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '0.375rem',
+                    fontSize: '0.875rem',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.5rem'
+                  }}
+                  title="Exportar todos os dados (eventos e notas)"
+                >
+                  <FaFileAlt />
+                  Exportar Dados
+                </button>
+                <div>
+                  <input
+                    type="file"
+                    accept=".json"
+                    onChange={importData}
+                    style={{display: 'none'}}
+                    id="import-file"
+                  />
+                  <label
+                    htmlFor="import-file"
+                    style={{
+                      padding: '0.5rem 1rem',
+                      backgroundColor: '#7c3aed',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '0.375rem',
+                      fontSize: '0.875rem',
+                      cursor: 'pointer',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '0.5rem'
+                    }}
+                    title="Importar dados de um arquivo JSON"
+                  >
+                    <FaFileAlt />
+                    Importar Dados
+                  </label>
+                </div>
+              </div>
+              <p style={{fontSize: '0.75rem', color: '#64748b', marginTop: '0.5rem'}}>
+                Use exportar para fazer backup dos dados e importar para restaurar dados de outro ambiente.
+              </p>
+            </div>
 
             {(role === 'administrador' || role === 'dono') && (
               <div>
