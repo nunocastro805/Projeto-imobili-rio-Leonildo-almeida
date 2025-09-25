@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { FaMapMarkerAlt, FaEuroSign, FaPlay, FaHeart, FaTimes, FaChevronLeft, FaChevronRight, FaImage } from 'react-icons/fa';
+import { FaMapMarkerAlt, FaEuroSign, FaPlay, FaHeart, FaTimes, FaChevronLeft, FaChevronRight, FaImage, FaUser } from 'react-icons/fa';
 import InterestForm from './InterestForm';
 
-export default function ListingCard({ listing, onInterestSubmit }){
+export default function ListingCard({ listing, onInterestSubmit, owners = [] }){
   const [showInterestForm, setShowInterestForm] = useState(false);
 
   // Media viewer state
@@ -72,6 +72,23 @@ export default function ListingCard({ listing, onInterestSubmit }){
             </div>
           )}
           <p className="text-sm mb-4" style={{color: '#4b5563', lineHeight: '1.5rem'}}>{listing.description}</p>
+
+          {listing.ownerId && (() => {
+            const owner = owners.find(o => o.id === listing.ownerId);
+            return owner ? (
+              <div className="mb-4 p-3 rounded-lg" style={{backgroundColor: '#f8fafc', border: '1px solid #e2e8f0'}}>
+                <div className="flex items-center mb-2">
+                  <FaUser className="mr-2" style={{color: '#7c3aed'}} />
+                  <span className="text-sm font-semibold" style={{color: '#7c3aed'}}>Proprietário: {owner.name}</span>
+                </div>
+                <div className="text-xs space-y-1" style={{color: '#6b7280'}}>
+                  <div>📞 {owner.phone}</div>
+                  <div>✉️ {owner.email}</div>
+                  {owner.address && <div>📍 {owner.address}</div>}
+                </div>
+              </div>
+            ) : null;
+          })()}
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center font-bold text-lg" style={{color: '#16a34a'}}>
               <FaEuroSign className="mr-1" />

@@ -43,6 +43,27 @@ export default function App(){
       }
     ];
   });
+  const [owners, setOwners] = useState(() => {
+    const savedOwners = localStorage.getItem('owners');
+    return savedOwners ? JSON.parse(savedOwners) : [
+      {
+        id: 1,
+        name: 'Carlos Rodrigues',
+        phone: '+238 9AA AAA AAA',
+        email: 'carlos.rodrigues@email.com',
+        address: 'Rua da Praia, Plateau',
+        notes: 'Proprietário de vários imóveis no Plateau'
+      },
+      {
+        id: 2,
+        name: 'Ana Pereira',
+        phone: '+238 9BB BBB BBB',
+        email: 'ana.pereira@email.com',
+        address: 'Achada de Santo António',
+        notes: 'Proprietária de casa para venda'
+      }
+    ];
+  });
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [showLogin, setShowLogin] = useState(false);
   const [showContact, setShowContact] = useState(false);
@@ -83,6 +104,11 @@ export default function App(){
     localStorage.setItem('leads', JSON.stringify(leads));
   }, [leads]);
 
+  // Save owners to localStorage whenever they change
+  useEffect(() => {
+    localStorage.setItem('owners', JSON.stringify(owners));
+  }, [owners]);
+
   // Save contactInfo to localStorage whenever it changes
   useEffect(() => {
     localStorage.setItem('contactInfo', JSON.stringify(contactInfo));
@@ -117,6 +143,22 @@ export default function App(){
 
   function handleDeleteLead(id){
     setLeads(leads.filter(lead => lead.id !== id));
+  }
+
+  function handleUpdateLead(updatedLead){
+    setLeads(leads.map(lead => lead.id === updatedLead.id ? updatedLead : lead));
+  }
+
+  function handleCreateOwner(newOwner){
+    setOwners([newOwner, ...owners]);
+  }
+
+  function handleUpdateOwner(updatedOwner){
+    setOwners(owners.map(owner => owner.id === updatedOwner.id ? updatedOwner : owner));
+  }
+
+  function handleDeleteOwner(id){
+    setOwners(owners.filter(owner => owner.id !== id));
   }
 
   function handleRoleChange(newRole){
@@ -171,6 +213,10 @@ export default function App(){
 
     if (importedData.accessCodes) {
       setAccessCodes(importedData.accessCodes);
+    }
+
+    if (importedData.owners && Array.isArray(importedData.owners)) {
+      setOwners(importedData.owners);
     }
 
     // Force a page reload to refresh all data
@@ -289,7 +335,7 @@ export default function App(){
 
               <div className="grid grid-cols-1" style={{gap: '1.5rem'}}>
                 {visible.map(l => (
-                  <ListingCard key={l.id} listing={l} onInterestSubmit={handleInterestSubmit} />
+                  <ListingCard key={l.id} listing={l} onInterestSubmit={handleInterestSubmit} owners={owners} />
                 ))}
               </div>
             </section>
@@ -301,6 +347,7 @@ export default function App(){
                 role={role}
                 listings={listings}
                 leads={leads}
+                owners={owners}
                 contactInfo={contactInfo}
                 onUpdateContact={handleUpdateContact}
                 accessCodes={accessCodes}
@@ -308,6 +355,10 @@ export default function App(){
                 onCreate={handleCreate}
                 onDelete={handleDelete}
                 onDeleteLead={handleDeleteLead}
+                onUpdateLead={handleUpdateLead}
+                onCreateOwner={handleCreateOwner}
+                onUpdateOwner={handleUpdateOwner}
+                onDeleteOwner={handleDeleteOwner}
                 onImportData={handleImportData}
               />
             ) : null}

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { FaPlus, FaImage, FaVideo, FaMapMarkerAlt } from 'react-icons/fa';
+import { FaPlus, FaImage, FaVideo, FaMapMarkerAlt, FaUser } from 'react-icons/fa';
 
-export default function ListingForm({ onCreate }){
+export default function ListingForm({ onCreate, leads = [], owners = [] }){
   const [title, setTitle] = useState('');
   const [type, setType] = useState('arrendar');
   const [price, setPrice] = useState('');
@@ -10,14 +10,15 @@ export default function ListingForm({ onCreate }){
   const [images, setImages] = useState([]);
   const [videos, setVideos] = useState([]);
   const [imagePreviews, setImagePreviews] = useState([]);
+  const [ownerId, setOwnerId] = useState('');
 
   function handleSubmit(e){
     e.preventDefault();
     const newListing = {
-      id: Date.now(), title, type, price, description, location, images, videos
+      id: Date.now(), title, type, price, description, location, images, videos, ownerId: ownerId ? parseInt(ownerId) : null
     };
     onCreate(newListing);
-    setTitle(''); setPrice(''); setDescription(''); setLocation(''); setImages([]); setVideos([]); setImagePreviews([]);
+    setTitle(''); setPrice(''); setDescription(''); setLocation(''); setImages([]); setVideos([]); setImagePreviews([]); setOwnerId('');
   }
 
   function handleImageFiles(e){
@@ -113,6 +114,24 @@ export default function ListingForm({ onCreate }){
         </div>
         <div>
           <label style={{display: 'block', fontSize: '0.875rem', fontWeight: '500', color: '#374151', marginBottom: '0.5rem', display: 'flex', alignItems: 'center'}}>
+            <FaUser style={{marginRight: '0.5rem', color: '#7c3aed'}} />
+            Proprietário
+          </label>
+          <select
+            value={ownerId}
+            onChange={e=>setOwnerId(e.target.value)}
+            className="form-input"
+          >
+            <option value="">Selecionar proprietário (opcional)</option>
+            {owners.map(owner => (
+              <option key={owner.id} value={owner.id}>
+                {owner.name} - {owner.phone}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div>
+          <label style={{display: 'block', fontSize: '0.875rem', fontWeight: '500', color: '#374151', marginBottom: '0.5rem', display: 'flex', alignItems: 'center'}}>
             <FaImage style={{marginRight: '0.5rem'}} />
             Fotos (jpg/png) - {imagePreviews.length} selecionadas
           </label>
@@ -173,6 +192,29 @@ export default function ListingForm({ onCreate }){
             style={{width: '100%', padding: '0.5rem 0.75rem', border: '1px solid #d1d5db', borderRadius: '0.375rem'}}
           />
         </div>
+
+        {/* Leads Information */}
+        <div style={{marginTop: '1rem', padding: '1rem', backgroundColor: '#f8fafc', borderRadius: '0.5rem', border: '1px solid #e2e8f0'}}>
+          <h4 style={{fontSize: '1rem', fontWeight: '500', color: '#374151', marginBottom: '0.75rem', display: 'flex', alignItems: 'center'}}>
+            <FaUser style={{marginRight: '0.5rem', color: '#8b5cf6'}} />
+            Informações de Leads
+          </h4>
+          <div style={{display: 'flex', flexDirection: 'column', gap: '0.5rem', fontSize: '0.875rem', color: '#6b7280'}}>
+            <div>
+              <strong>Total de Leads:</strong> {leads.length}
+            </div>
+            <div>
+              <strong>Leads Novos:</strong> {leads.filter(l => l.status === 'novo').length}
+            </div>
+            <div>
+              <strong>Leads Contactados:</strong> {leads.filter(l => l.status === 'contatado').length}
+            </div>
+            <div style={{marginTop: '0.5rem', fontSize: '0.75rem', color: '#64748b'}}>
+              💡 Dica: Após criar o imóvel, os clientes poderão mostrar interesse e gerar leads automaticamente.
+            </div>
+          </div>
+        </div>
+
         <button type="submit" className="btn w-full">
           Criar Imóvel
         </button>

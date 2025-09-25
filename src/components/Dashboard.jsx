@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { FaTachometerAlt, FaTrash, FaInfoCircle, FaUser, FaPhone, FaEnvelope, FaCalendarAlt, FaCog, FaPlus, FaImage, FaVideo, FaTimes, FaChevronLeft, FaChevronRight, FaEdit, FaSave, FaStickyNote, FaFileAlt, FaHome, FaMapMarkerAlt } from 'react-icons/fa';
+import { FaTachometerAlt, FaTrash, FaInfoCircle, FaUser, FaPhone, FaEnvelope, FaCalendarAlt, FaCog, FaPlus, FaImage, FaVideo, FaTimes, FaChevronLeft, FaChevronRight, FaEdit, FaSave, FaStickyNote, FaFileAlt, FaHome, FaMapMarkerAlt, FaMoneyBillWave } from 'react-icons/fa';
 import Calendar from 'react-calendar';
 import 'react-calendar/dist/Calendar.css';
 import AdminSettings from './AdminSettings';
 import ListingForm from './ListingForm';
+import FinancialManagement from './FinancialManagement';
 
-export default function Dashboard({ role, listings, leads, contactInfo, onUpdateContact, accessCodes, onUpdateAccessCodes, onCreate, onDelete, onDeleteLead, onImportData }){
+export default function Dashboard({ role, listings, leads, owners, contactInfo, onUpdateContact, accessCodes, onUpdateAccessCodes, onCreate, onDelete, onDeleteLead, onUpdateLead, onCreateOwner, onUpdateOwner, onDeleteOwner, onImportData }){
   const [activeTab, setActiveTab] = useState('dashboard');
   const [events, setEvents] = useState(() => {
     const savedEvents = localStorage.getItem('calendarEvents');
@@ -43,6 +44,16 @@ export default function Dashboard({ role, listings, leads, contactInfo, onUpdate
   const [editingNoteId, setEditingNoteId] = useState(null);
   const [editNoteContent, setEditNoteContent] = useState('');
 
+  // Lead notes state
+  const [leadNotes, setLeadNotes] = useState(() => {
+    const savedLeadNotes = localStorage.getItem('leadNotes');
+    return savedLeadNotes ? JSON.parse(savedLeadNotes) : {};
+  });
+  const [newLeadNote, setNewLeadNote] = useState('');
+  const [editingLeadNoteId, setEditingLeadNoteId] = useState(null);
+  const [editLeadNoteContent, setEditLeadNoteContent] = useState('');
+  const [currentLeadId, setCurrentLeadId] = useState(null);
+
   // Save events to localStorage whenever events change
   useEffect(() => {
     localStorage.setItem('calendarEvents', JSON.stringify(events));
@@ -52,6 +63,11 @@ export default function Dashboard({ role, listings, leads, contactInfo, onUpdate
   useEffect(() => {
     localStorage.setItem('adminNotes', JSON.stringify(notes));
   }, [notes]);
+
+  // Save lead notes to localStorage whenever leadNotes change
+  useEffect(() => {
+    localStorage.setItem('leadNotes', JSON.stringify(leadNotes));
+  }, [leadNotes]);
 
   // Media viewer functions
   const openImageViewer = (images, startIndex = 0) => {
@@ -132,15 +148,23 @@ export default function Dashboard({ role, listings, leads, contactInfo, onUpdate
 
   // Export/Import functions
   const exportData = () => {
+    const financialExpenses = JSON.parse(localStorage.getItem('financialExpenses') || '[]');
+    const financialRevenues = JSON.parse(localStorage.getItem('financialRevenues') || '[]');
+    const financialDocuments = JSON.parse(localStorage.getItem('financialDocuments') || '[]');
+
     const data = {
       events: events,
       notes: notes,
       listings: listings,
       leads: leads,
+      owners: owners,
       contactInfo: contactInfo,
       accessCodes: accessCodes,
+      financialExpenses: financialExpenses,
+      financialRevenues: financialRevenues,
+      financialDocuments: financialDocuments,
       exportedAt: new Date().toISOString(),
-      version: '1.0'
+      version: '1.2'
     };
 
     const dataStr = JSON.stringify(data, null, 2);
@@ -165,6 +189,19 @@ export default function Dashboard({ role, listings, leads, contactInfo, onUpdate
           // Use the callback to import all data types
           if (onImportData) {
             onImportData(importedData);
+          }
+
+          // Import financial data
+          if (importedData.financialExpenses) {
+            localStorage.setItem('financialExpenses', JSON.stringify(importedData.financialExpenses));
+          }
+
+          if (importedData.financialRevenues) {
+            localStorage.setItem('financialRevenues', JSON.stringify(importedData.financialRevenues));
+          }
+
+          if (importedData.financialDocuments) {
+            localStorage.setItem('financialDocuments', JSON.stringify(importedData.financialDocuments));
           }
 
           alert('Dados importados com sucesso!');
@@ -220,6 +257,72 @@ export default function Dashboard({ role, listings, leads, contactInfo, onUpdate
   const deleteNote = (noteId) => {
     if (window.confirm('Tem certeza que deseja eliminar esta nota?')) {
       setNotes(notes.filter(note => note.id !== noteId));
+    }
+  };
+
+  // Lead notes functions
+  const addLeadNote = (leadId) => {
+    if (newLeadNote.trim()) {
+      const note = {
+        id: Date.now(),
+        content: newLeadNote.trim(),
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      };
+
+      const updatedLeadNotes = {
+        ...leadNotes,
+        [leadId]: [...(leadNotes[leadId] || []), note]
+      };
+
+      setLeadNotes(updatedLeadNotes);
+      setNewLeadNote('');
+      setCurrentLeadId(null);
+    }
+  };
+
+  const startEditingLeadNote = (leadId, note) => {
+    setEditingLeadNoteId(note.id);
+    setEditLeadNoteContent(note.content);
+    setCurrentLeadId(leadId);
+  };
+
+  const saveEditedLeadNote = () => {
+    if (editLeadNoteContent.trim() && currentLeadId) {
+      const updatedLeadNotes = {
+        ...leadNotes,
+        [currentLeadId]: leadNotes[currentLeadId].map(note =>
+          note.id === editingLeadNoteId
+            ? {
+                ...note,
+                content: editLeadNoteContent.trim(),
+                updatedAt: new Date().toISOString()
+              }
+            : note
+        )
+      };
+
+      setLeadNotes(updatedLeadNotes);
+      setEditingLeadNoteId(null);
+      setEditLeadNoteContent('');
+      setCurrentLeadId(null);
+    }
+  };
+
+  const cancelEditingLeadNote = () => {
+    setEditingLeadNoteId(null);
+    setEditLeadNoteContent('');
+    setCurrentLeadId(null);
+  };
+
+  const deleteLeadNote = (leadId, noteId) => {
+    if (window.confirm('Tem certeza que deseja eliminar esta nota?')) {
+      const updatedLeadNotes = {
+        ...leadNotes,
+        [leadId]: leadNotes[leadId].filter(note => note.id !== noteId)
+      };
+
+      setLeadNotes(updatedLeadNotes);
     }
   };
 
@@ -317,6 +420,60 @@ export default function Dashboard({ role, listings, leads, contactInfo, onUpdate
           >
             <FaStickyNote />
             Notas
+          </button>
+          <button
+            onClick={() => setActiveTab('leads')}
+            style={{
+              padding: '0.5rem 1rem',
+              border: 'none',
+              backgroundColor: activeTab === 'leads' ? '#2563eb' : 'transparent',
+              color: activeTab === 'leads' ? 'white' : '#6b7280',
+              borderRadius: '0.375rem',
+              fontWeight: '500',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.5rem'
+            }}
+          >
+            <FaUser />
+            Leads
+          </button>
+          <button
+            onClick={() => setActiveTab('owners')}
+            style={{
+              padding: '0.5rem 1rem',
+              border: 'none',
+              backgroundColor: activeTab === 'owners' ? '#7c3aed' : 'transparent',
+              color: activeTab === 'owners' ? 'white' : '#6b7280',
+              borderRadius: '0.375rem',
+              fontWeight: '500',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.5rem'
+            }}
+          >
+            <FaUser />
+            Proprietários
+          </button>
+          <button
+            onClick={() => setActiveTab('finance')}
+            style={{
+              padding: '0.5rem 1rem',
+              border: 'none',
+              backgroundColor: activeTab === 'finance' ? '#059669' : 'transparent',
+              color: activeTab === 'finance' ? 'white' : '#6b7280',
+              borderRadius: '0.375rem',
+              fontWeight: '500',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.5rem'
+            }}
+          >
+            <FaMoneyBillWave />
+            Financeiro
           </button>
         </div>
 
@@ -608,6 +765,161 @@ export default function Dashboard({ role, listings, leads, contactInfo, onUpdate
                           </p>
                         </div>
                       )}
+    
+                      {/* Lead Notes Section */}
+                      <div style={{marginTop: '1rem', padding: '0.75rem', backgroundColor: '#f8fafc', borderRadius: '0.375rem', border: '1px solid #e2e8f0'}}>
+                        <h6 style={{fontSize: '0.875rem', fontWeight: '600', color: '#374151', marginBottom: '0.5rem'}}>
+                          Notas do Lead ({(leadNotes[lead.id] || []).length})
+                        </h6>
+    
+                        {/* Add new note */}
+                        <div style={{marginBottom: '1rem'}}>
+                          <div style={{display: 'flex', gap: '0.5rem'}}>
+                            <input
+                              type="text"
+                              value={currentLeadId === lead.id ? newLeadNote : ''}
+                              onChange={(e) => {
+                                setNewLeadNote(e.target.value);
+                                setCurrentLeadId(lead.id);
+                              }}
+                              placeholder="Adicionar nota..."
+                              style={{
+                                flex: 1,
+                                padding: '0.5rem',
+                                border: '1px solid #d1d5db',
+                                borderRadius: '0.375rem',
+                                fontSize: '0.875rem'
+                              }}
+                            />
+                            <button
+                              onClick={() => addLeadNote(lead.id)}
+                              disabled={!newLeadNote.trim() || currentLeadId !== lead.id}
+                              style={{
+                                padding: '0.5rem 1rem',
+                                backgroundColor: (newLeadNote.trim() && currentLeadId === lead.id) ? '#10b981' : '#d1d5db',
+                                color: 'white',
+                                border: 'none',
+                                borderRadius: '0.375rem',
+                                cursor: (newLeadNote.trim() && currentLeadId === lead.id) ? 'pointer' : 'not-allowed',
+                                fontSize: '0.875rem'
+                              }}
+                            >
+                              <FaPlus />
+                            </button>
+                          </div>
+                        </div>
+    
+                        {/* Lead notes list */}
+                        {(leadNotes[lead.id] || []).length > 0 && (
+                          <div style={{display: 'flex', flexDirection: 'column', gap: '0.5rem'}}>
+                            {(leadNotes[lead.id] || []).map(note => (
+                              <div key={note.id} style={{
+                                backgroundColor: 'white',
+                                borderRadius: '0.25rem',
+                                border: '1px solid #e5e7eb',
+                                padding: '0.5rem'
+                              }}>
+                                {editingLeadNoteId === note.id && currentLeadId === lead.id ? (
+                                  // Edit mode
+                                  <div>
+                                    <textarea
+                                      value={editLeadNoteContent}
+                                      onChange={(e) => setEditLeadNoteContent(e.target.value)}
+                                      rows="2"
+                                      style={{
+                                        width: '100%',
+                                        padding: '0.5rem',
+                                        border: '1px solid #d1d5db',
+                                        borderRadius: '0.375rem',
+                                        fontSize: '0.875rem',
+                                        marginBottom: '0.5rem',
+                                        resize: 'vertical'
+                                      }}
+                                    />
+                                    <div style={{display: 'flex', gap: '0.5rem', justifyContent: 'flex-end'}}>
+                                      <button
+                                        onClick={saveEditedLeadNote}
+                                        style={{
+                                          padding: '0.25rem 0.75rem',
+                                          backgroundColor: '#10b981',
+                                          color: 'white',
+                                          border: 'none',
+                                          borderRadius: '0.25rem',
+                                          fontSize: '0.75rem',
+                                          cursor: 'pointer'
+                                        }}
+                                      >
+                                        Salvar
+                                      </button>
+                                      <button
+                                        onClick={cancelEditingLeadNote}
+                                        style={{
+                                          padding: '0.25rem 0.75rem',
+                                          backgroundColor: '#6b7280',
+                                          color: 'white',
+                                          border: 'none',
+                                          borderRadius: '0.25rem',
+                                          fontSize: '0.75rem',
+                                          cursor: 'pointer'
+                                        }}
+                                      >
+                                        Cancelar
+                                      </button>
+                                    </div>
+                                  </div>
+                                ) : (
+                                  // View mode
+                                  <div>
+                                    <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.25rem'}}>
+                                      <p style={{fontSize: '0.875rem', color: '#4b5563', lineHeight: '1.4', margin: 0, flex: 1, marginRight: '1rem'}}>
+                                        {note.content}
+                                      </p>
+                                      <div style={{display: 'flex', gap: '0.25rem'}}>
+                                        <button
+                                          onClick={() => startEditingLeadNote(lead.id, note)}
+                                          style={{
+                                            color: '#2563eb',
+                                            fontSize: '0.75rem',
+                                            background: 'none',
+                                            border: 'none',
+                                            cursor: 'pointer',
+                                            padding: '0.25rem'
+                                          }}
+                                          title="Editar nota"
+                                        >
+                                          <FaEdit />
+                                        </button>
+                                        <button
+                                          onClick={() => deleteLeadNote(lead.id, note.id)}
+                                          style={{
+                                            color: '#dc2626',
+                                            fontSize: '0.75rem',
+                                            background: 'none',
+                                            border: 'none',
+                                            cursor: 'pointer',
+                                            padding: '0.25rem'
+                                          }}
+                                          title="Eliminar nota"
+                                        >
+                                          <FaTrash />
+                                        </button>
+                                      </div>
+                                    </div>
+                                    <div style={{fontSize: '0.75rem', color: '#6b7280'}}>
+                                      {new Date(note.createdAt).toLocaleDateString('pt-PT')}
+                                      {note.updatedAt !== note.createdAt && (
+                                        <span style={{marginLeft: '0.5rem'}}>
+                                          (atualizado: {new Date(note.updatedAt).toLocaleDateString('pt-PT')})
+                                        </span>
+                                      )}
+                                    </div>
+                                  </div>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -623,7 +935,7 @@ export default function Dashboard({ role, listings, leads, contactInfo, onUpdate
               Adicionar Novo Imóvel
             </h2>
             <div style={{maxWidth: '800px'}}>
-              <ListingForm onCreate={onCreate} />
+              <ListingForm onCreate={onCreate} leads={leads} owners={owners} />
             </div>
           </>
         )}
@@ -653,9 +965,21 @@ export default function Dashboard({ role, listings, leads, contactInfo, onUpdate
                     const dayEvents = events.filter(event =>
                       new Date(event.date).toDateString() === date.toDateString()
                     );
+                    const leadEvents = dayEvents.filter(event =>
+                      event.title && event.title.includes('Follow-up:')
+                    );
                     return dayEvents.length > 0 ? (
-                      <div style={{fontSize: '0.75rem', color: '#2563eb', marginTop: '0.25rem'}}>
-                        {dayEvents.length} evento{dayEvents.length > 1 ? 's' : ''}
+                      <div style={{fontSize: '0.75rem', marginTop: '0.25rem'}}>
+                        {leadEvents.length > 0 && (
+                          <div style={{color: '#8b5cf6', fontWeight: '600'}}>
+                            {leadEvents.length} lead{leadEvents.length > 1 ? 's' : ''}
+                          </div>
+                        )}
+                        {dayEvents.length - leadEvents.length > 0 && (
+                          <div style={{color: '#2563eb'}}>
+                            {dayEvents.length - leadEvents.length} outro{dayEvents.length - leadEvents.length > 1 ? 's' : ''}
+                          </div>
+                        )}
                       </div>
                     ) : null;
                   }}
@@ -669,13 +993,16 @@ export default function Dashboard({ role, listings, leads, contactInfo, onUpdate
                 <div className="space-y-2">
                   {events.filter(event =>
                     new Date(event.date).toDateString() === selectedDate.toDateString()
-                  ).map(event => (
-                    <div key={event.id} style={{
-                      backgroundColor: '#f9fafb',
-                      padding: '0.75rem',
-                      borderRadius: '0.375rem',
-                      border: '1px solid #e5e7eb'
-                    }}>
+                  ).map(event => {
+                    const isLeadEvent = event.title && event.title.includes('Follow-up:');
+                    return (
+                      <div key={event.id} style={{
+                        backgroundColor: isLeadEvent ? '#faf5ff' : '#f9fafb',
+                        padding: '0.75rem',
+                        borderRadius: '0.375rem',
+                        border: `1px solid ${isLeadEvent ? '#c4b5fd' : '#e5e7eb'}`,
+                        borderLeft: `4px solid ${isLeadEvent ? '#8b5cf6' : '#e5e7eb'}`
+                      }}>
                       {editingEventId === event.id ? (
                         // Edit mode
                         <div style={{display: 'flex', flexDirection: 'column', gap: '0.5rem'}}>
@@ -820,7 +1147,7 @@ export default function Dashboard({ role, listings, leads, contactInfo, onUpdate
                         </div>
                       )}
                     </div>
-                  ))}
+                  )})}
                   {events.filter(event =>
                     new Date(event.date).toDateString() === selectedDate.toDateString()
                   ).length === 0 && (
@@ -1103,6 +1430,356 @@ export default function Dashboard({ role, listings, leads, contactInfo, onUpdate
               )}
             </div>
           </>
+        )}
+
+        {activeTab === 'leads' && (
+          <>
+            <h2 style={{fontSize: '1.25rem', fontWeight: '600', color: '#1f2937', marginBottom: '1rem', display: 'flex', alignItems: 'center'}}>
+              <FaUser style={{marginRight: '0.5rem', color: '#8b5cf6'}} />
+              Gestão de Leads ({leads.length})
+            </h2>
+
+            {/* Leads Management */}
+            <div style={{marginBottom: '2rem', padding: '1rem', backgroundColor: '#f0f9ff', borderRadius: '0.5rem', border: '1px solid #0ea5e9'}}>
+              <h4 style={{fontSize: '1rem', fontWeight: '500', color: '#0c4a6e', marginBottom: '0.75rem', display: 'flex', alignItems: 'center'}}>
+                <FaUser style={{marginRight: '0.5rem'}} />
+                Leads de Clientes
+              </h4>
+              <div style={{display: 'flex', gap: '1rem', flexWrap: 'wrap'}}>
+                <div style={{fontSize: '0.875rem', color: '#64748b'}}>
+                  Total: {leads.length} | Novos: {leads.filter(l => l.status === 'novo').length} | Contactados: {leads.filter(l => l.status === 'contatado').length}
+                </div>
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              {leads.map(lead => (
+                <div key={lead.id} style={{
+                  backgroundColor: lead.status === 'novo' ? '#fef3c7' : '#f0fdf4',
+                  padding: '1rem',
+                  borderRadius: '0.5rem',
+                  border: '1px solid #e5e7eb'
+                }}>
+                  <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'start', marginBottom: '0.5rem'}}>
+                    <div>
+                      <h5 style={{fontWeight: '600', color: '#1f2937'}}>{lead.name}</h5>
+                      <p style={{fontSize: '0.875rem', color: '#6b7280', marginTop: '0.25rem'}}>
+                        Interesse em: <strong>{lead.listingTitle}</strong>
+                      </p>
+                    </div>
+                    <div style={{display: 'flex', alignItems: 'center', gap: '0.5rem'}}>
+                      <select
+                        value={lead.status}
+                        onChange={(e) => {
+                          const updatedLead = {...lead, status: e.target.value};
+                          onUpdateLead(updatedLead);
+                        }}
+                        style={{
+                          padding: '0.25rem 0.5rem',
+                          border: '1px solid #d1d5db',
+                          borderRadius: '0.25rem',
+                          fontSize: '0.75rem',
+                          backgroundColor: lead.status === 'novo' ? '#fef3c7' : '#f0fdf4'
+                        }}
+                      >
+                        <option value="novo">Novo</option>
+                        <option value="contatado">Contactado</option>
+                        <option value="fechado">Fechado</option>
+                      </select>
+                      <button
+                        onClick={() => {
+                          // Schedule follow-up for this lead
+                          const followUpDate = new Date();
+                          followUpDate.setDate(followUpDate.getDate() + 7); // Default to 1 week from now
+
+                          const newEvent = {
+                            id: Date.now(),
+                            name: lead.name,
+                            number: lead.phone,
+                            title: `Follow-up: ${lead.name} - ${lead.listingTitle}`,
+                            description: `Follow-up com ${lead.name} sobre interesse em ${lead.listingTitle}. Email: ${lead.email}`,
+                            date: followUpDate.toISOString()
+                          };
+
+                          const updatedEvents = [...events, newEvent];
+                          setEvents(updatedEvents);
+                          localStorage.setItem('calendarEvents', JSON.stringify(updatedEvents));
+
+                          alert(`Follow-up agendado para ${followUpDate.toLocaleDateString('pt-PT')} no calendário!`);
+                        }}
+                        style={{
+                          color: '#2563eb',
+                          fontSize: '0.875rem',
+                          background: 'none',
+                          border: 'none',
+                          cursor: 'pointer',
+                          padding: '0.25rem',
+                          borderRadius: '0.25rem'
+                        }}
+                        onMouseOver={(e) => e.target.style.backgroundColor = '#eff6ff'}
+                        onMouseOut={(e) => e.target.style.backgroundColor = 'transparent'}
+                        title="Agendar follow-up no calendário"
+                      >
+                        <FaCalendarAlt />
+                      </button>
+                      <button
+                        onClick={() => onDeleteLead(lead.id)}
+                        style={{
+                          color: '#dc2626',
+                          fontSize: '1rem',
+                          background: 'none',
+                          border: 'none',
+                          cursor: 'pointer',
+                          padding: '0.25rem',
+                          borderRadius: '0.25rem'
+                        }}
+                        onMouseOver={(e) => e.target.style.backgroundColor = '#fef2f2'}
+                        onMouseOut={(e) => e.target.style.backgroundColor = 'transparent'}
+                        title="Eliminar lead"
+                      >
+                        <FaTrash />
+                      </button>
+                    </div>
+                  </div>
+
+                  <div style={{display: 'flex', flexDirection: 'column', gap: '0.5rem', fontSize: '0.875rem'}}>
+                    <div style={{display: 'flex', alignItems: 'center', color: '#4b5563'}}>
+                      <FaPhone style={{marginRight: '0.5rem', color: '#6b7280'}} />
+                      {lead.phone}
+                    </div>
+                    <div style={{display: 'flex', alignItems: 'center', color: '#4b5563'}}>
+                      <FaEnvelope style={{marginRight: '0.5rem', color: '#6b7280'}} />
+                      {lead.email}
+                    </div>
+                    <div style={{display: 'flex', alignItems: 'center', color: '#4b5563'}}>
+                      <FaCalendarAlt style={{marginRight: '0.5rem', color: '#6b7280'}} />
+                      {new Date(lead.date).toLocaleDateString('pt-PT')}
+                    </div>
+                  </div>
+
+                  {lead.message && (
+                    <div style={{marginTop: '0.75rem', padding: '0.5rem', backgroundColor: 'white', borderRadius: '0.25rem'}}>
+                      <p style={{fontSize: '0.875rem', color: '#4b5563', margin: 0}}>
+                        <strong>Mensagem:</strong> {lead.message}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+
+            {leads.length === 0 && (
+              <div style={{textAlign: 'center', padding: '2rem', color: '#6b7280'}}>
+                <FaUser style={{fontSize: '3rem', marginBottom: '1rem', opacity: 0.5}} />
+                <p>Nenhum lead ainda. Os leads aparecerão aqui quando os clientes mostrarem interesse nas propriedades.</p>
+              </div>
+            )}
+          </>
+        )}
+
+        {activeTab === 'owners' && (
+          <>
+            <h2 style={{fontSize: '1.25rem', fontWeight: '600', color: '#1f2937', marginBottom: '1rem', display: 'flex', alignItems: 'center'}}>
+              <FaUser style={{marginRight: '0.5rem', color: '#7c3aed'}} />
+              Gestão de Proprietários ({owners.length})
+            </h2>
+
+            {/* Add new owner */}
+            <div style={{marginBottom: '2rem', padding: '1rem', backgroundColor: '#f9fafb', borderRadius: '0.5rem', border: '1px solid #e5e7eb'}}>
+              <h4 style={{fontSize: '1rem', fontWeight: '500', color: '#374151', marginBottom: '0.75rem'}}>
+                Adicionar Novo Proprietário
+              </h4>
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  const formData = new FormData(e.target);
+                  const newOwner = {
+                    id: Date.now(),
+                    name: formData.get('name'),
+                    phone: formData.get('phone'),
+                    email: formData.get('email'),
+                    address: formData.get('address'),
+                    notes: formData.get('notes')
+                  };
+                  onCreateOwner(newOwner);
+                  e.target.reset();
+                }}
+                style={{display: 'flex', flexDirection: 'column', gap: '0.75rem'}}
+              >
+                <div style={{display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem'}}>
+                  <input
+                    type="text"
+                    name="name"
+                    placeholder="Nome completo"
+                    required
+                    style={{
+                      padding: '0.5rem',
+                      border: '1px solid #d1d5db',
+                      borderRadius: '0.375rem',
+                      fontSize: '0.875rem'
+                    }}
+                  />
+                  <input
+                    type="tel"
+                    name="phone"
+                    placeholder="Telefone"
+                    required
+                    style={{
+                      padding: '0.5rem',
+                      border: '1px solid #d1d5db',
+                      borderRadius: '0.375rem',
+                      fontSize: '0.875rem'
+                    }}
+                  />
+                </div>
+                <div style={{display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem'}}>
+                  <input
+                    type="email"
+                    name="email"
+                    placeholder="Email"
+                    required
+                    style={{
+                      padding: '0.5rem',
+                      border: '1px solid #d1d5db',
+                      borderRadius: '0.375rem',
+                      fontSize: '0.875rem'
+                    }}
+                  />
+                  <input
+                    type="text"
+                    name="address"
+                    placeholder="Endereço"
+                    style={{
+                      padding: '0.5rem',
+                      border: '1px solid #d1d5db',
+                      borderRadius: '0.375rem',
+                      fontSize: '0.875rem'
+                    }}
+                  />
+                </div>
+                <textarea
+                  name="notes"
+                  placeholder="Notas adicionais"
+                  rows="2"
+                  style={{
+                    padding: '0.5rem',
+                    border: '1px solid #d1d5db',
+                    borderRadius: '0.375rem',
+                    fontSize: '0.875rem',
+                    resize: 'vertical'
+                  }}
+                />
+                <button
+                  type="submit"
+                  className="btn"
+                  style={{fontSize: '0.875rem', padding: '0.5rem 1rem', alignSelf: 'flex-start'}}
+                >
+                  <FaPlus style={{marginRight: '0.5rem'}} />
+                  Adicionar Proprietário
+                </button>
+              </form>
+            </div>
+
+            {/* Owners list */}
+            <div className="space-y-4">
+              {owners.map(owner => (
+                <div key={owner.id} style={{
+                  backgroundColor: '#f9fafb',
+                  borderRadius: '0.5rem',
+                  border: '1px solid #e5e7eb',
+                  padding: '1rem'
+                }}>
+                  <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'start', marginBottom: '0.75rem'}}>
+                    <div style={{flex: 1}}>
+                      <h5 style={{fontSize: '1.125rem', fontWeight: '600', color: '#1f2937', marginBottom: '0.5rem'}}>
+                        {owner.name}
+                      </h5>
+                      <div style={{display: 'flex', flexWrap: 'wrap', gap: '1rem', fontSize: '0.875rem', color: '#6b7280'}}>
+                        <div style={{display: 'flex', alignItems: 'center', color: '#4b5563'}}>
+                          <FaPhone style={{marginRight: '0.5rem', color: '#6b7280'}} />
+                          {owner.phone}
+                        </div>
+                        <div style={{display: 'flex', alignItems: 'center', color: '#4b5563'}}>
+                          <FaEnvelope style={{marginRight: '0.5rem', color: '#6b7280'}} />
+                          {owner.email}
+                        </div>
+                        {owner.address && (
+                          <div style={{display: 'flex', alignItems: 'center', color: '#4b5563'}}>
+                            <FaMapMarkerAlt style={{marginRight: '0.5rem', color: '#6b7280'}} />
+                            {owner.address}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                    <div style={{display: 'flex', gap: '0.5rem'}}>
+                      <button
+                        onClick={() => {
+                          const updatedName = prompt('Novo nome:', owner.name);
+                          if (updatedName && updatedName.trim()) {
+                            onUpdateOwner({...owner, name: updatedName.trim()});
+                          }
+                        }}
+                        style={{
+                          color: '#2563eb',
+                          fontSize: '0.875rem',
+                          background: 'none',
+                          border: 'none',
+                          cursor: 'pointer',
+                          padding: '0.25rem',
+                          borderRadius: '0.25rem'
+                        }}
+                        onMouseOver={(e) => e.target.style.backgroundColor = '#eff6ff'}
+                        onMouseOut={(e) => e.target.style.backgroundColor = 'transparent'}
+                        title="Editar nome"
+                      >
+                        <FaEdit />
+                      </button>
+                      <button
+                        onClick={() => {
+                          if (window.confirm('Tem certeza que deseja eliminar este proprietário?')) {
+                            onDeleteOwner(owner.id);
+                          }
+                        }}
+                        style={{
+                          color: '#dc2626',
+                          fontSize: '0.875rem',
+                          background: 'none',
+                          border: 'none',
+                          cursor: 'pointer',
+                          padding: '0.25rem',
+                          borderRadius: '0.25rem'
+                        }}
+                        onMouseOver={(e) => e.target.style.backgroundColor = '#fef2f2'}
+                        onMouseOut={(e) => e.target.style.backgroundColor = 'transparent'}
+                        title="Eliminar proprietário"
+                      >
+                        <FaTrash />
+                      </button>
+                    </div>
+                  </div>
+
+                  {owner.notes && (
+                    <div style={{marginTop: '0.75rem', padding: '0.5rem', backgroundColor: 'white', borderRadius: '0.25rem'}}>
+                      <p style={{fontSize: '0.875rem', color: '#4b5563', margin: 0}}>
+                        <strong>Notas:</strong> {owner.notes}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+
+            {owners.length === 0 && (
+              <div style={{textAlign: 'center', padding: '2rem', color: '#6b7280'}}>
+                <FaUser style={{fontSize: '3rem', marginBottom: '1rem', opacity: 0.5}} />
+                <p>Nenhum proprietário cadastrado ainda. Adicione o primeiro acima!</p>
+              </div>
+            )}
+          </>
+        )}
+
+        {activeTab === 'finance' && (
+          <FinancialManagement />
         )}
       </div>
 

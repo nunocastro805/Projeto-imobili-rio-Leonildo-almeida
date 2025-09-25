@@ -321,3 +321,275 @@ body {
 .group:hover .group-hover-text-purple-600 {
   color: #9333ea;
 }
+
+/* Mobile Responsiveness */
+@media (max-width: 768px) {
+  .hero-section {
+    min-height: 80vh;
+    padding: 1rem;
+  }
+
+  .hero-content {
+    padding: 0 1rem;
+  }
+
+  .hero-content h1 {
+    font-size: 1.875rem !important;
+    line-height: 2.25rem !important;
+  }
+
+  .hero-content p {
+    font-size: 1.125rem !important;
+    margin-bottom: 1.5rem !important;
+  }
+
+  .btn {
+    padding: 0.625rem 1.25rem;
+    font-size: 0.875rem;
+  }
+
+  .container {
+    padding: 0 0.75rem;
+  }
+
+  .search-section {
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .form-input {
+    font-size: 0.875rem;
+    padding: 0.625rem 0.875rem;
+  }
+
+  .card {
+    padding: 1rem;
+    margin-bottom: 1rem;
+  }
+
+  /* Dashboard mobile adjustments */
+  .space-y-6 > * + * {
+    margin-top: 1rem;
+  }
+
+  /* Modal adjustments for mobile */
+  .modal-content {
+    margin: 1rem;
+    max-width: calc(100vw - 2rem);
+    width: auto;
+  }
+
+  /* Calendar mobile */
+  .react-calendar {
+    font-size: 0.875rem;
+  }
+
+  /* Leads mobile */
+  .lead-card {
+    padding: 0.75rem;
+  }
+
+  /* Navigation mobile */
+  .nav-tabs {
+    flex-wrap: wrap;
+    gap: 0.25rem;
+  }
+
+  .nav-tabs button {
+    padding: 0.375rem 0.75rem;
+    font-size: 0.75rem;
+  }
+
+  /* Grid adjustments */
+  .grid-cols-1 {
+    gap: 1rem;
+  }
+
+  /* Text adjustments */
+  .text-2xl {
+    font-size: 1.25rem;
+    line-height: 1.75rem;
+  }
+
+  .text-4xl {
+    font-size: 1.5rem;
+    line-height: 2rem;
+  }
+
+  /* Spacing adjustments */
+  .mb-4 {
+    margin-bottom: 0.75rem;
+  }
+
+  .mb-6 {
+    margin-bottom: 1rem;
+  }
+
+  .mb-8 {
+    margin-bottom: 1.5rem;
+  }
+
+  .p-4 {
+    padding: 0.75rem;
+  }
+
+  .p-6 {
+    padding: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .hero-content h1 {
+    font-size: 1.5rem !important;
+    line-height: 2rem !important;
+  }
+
+  .hero-content p {
+    font-size: 1rem !important;
+  }
+
+  .btn {
+    padding: 0.5rem 1rem;
+    font-size: 0.8125rem;
+    width: 100%;
+    max-width: 280px;
+  }
+
+  .search-section {
+    padding: 1rem;
+  }
+
+  .form-input {
+    font-size: 0.8125rem;
+  }
+
+  .card {
+    padding: 0.75rem;
+  }
+
+  /* Very small screens */
+  .container {
+    padding: 0 0.5rem;
+  }
+
+  .nav-tabs button {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.6875rem;
+  }
+
+  /* Navbar mobile */
+  nav .container {
+    padding: 0 1rem;
+  }
+
+  nav .flex.items-center {
+    height: 3.5rem;
+  }
+
+  nav .font-bold {
+    font-size: 1rem;
+  }
+
+  nav .space-x-4 > * + * {
+    margin-left: 0.75rem;
+  }
+
+  nav select {
+    font-size: 0.75rem;
+    padding: 0.25rem 0.5rem;
+  }
+
+  nav button {
+    font-size: 0.75rem;
+    padding: 0.375rem 0.75rem;
+  }
+
+  /* Hide text on very small screens */
+  @media (max-width: 360px) {
+    nav .font-bold {
+      display: none;
+    }
+
+    nav .text-sm {
+      display: none;
+    }
+
+    nav select {
+      min-width: 80px;
+    }
+  }
+
+  /* Modal responsiveness */
+  .modal-overlay {
+    padding: 1rem;
+  }
+
+  .modal-content {
+    max-height: calc(100vh - 2rem);
+    overflow-y: auto;
+  }
+
+  /* Form responsiveness */
+  .form-group {
+    margin-bottom: 1rem;
+  }
+
+  .form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-size: 0.875rem;
+  }
+
+  /* Button responsiveness */
+  .btn-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .btn-group button {
+    width: 100%;
+  }
+
+  /* Table responsiveness */
+  .table-responsive {
+    overflow-x: auto;
+  }
+
+  .table-responsive table {
+    min-width: 600px;
+  }
+
+  /* Dashboard tabs mobile */
+  .dashboard-tabs {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .dashboard-tabs .flex {
+    min-width: max-content;
+  }
+
+  /* Calendar mobile */
+  .calendar-container {
+    overflow-x: auto;
+  }
+
+  .calendar-container .react-calendar {
+    min-width: 320px;
+  }
+
+  /* Leads mobile */
+  .leads-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .lead-item {
+    padding: 1rem;
+    border-radius: 0.5rem;
+    background: white;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+}
