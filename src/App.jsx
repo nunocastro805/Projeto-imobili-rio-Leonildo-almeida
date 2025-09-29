@@ -333,7 +333,7 @@ export default function App(){
                 </div>
               </div>
 
-              <div className="grid grid-cols-1" style={{gap: '1.5rem'}}>
+              <div className="grid grid-responsive" style={{gap: '1.5rem'}}>
                 {visible.map(l => (
                   <ListingCard key={l.id} listing={l} onInterestSubmit={handleInterestSubmit} owners={owners} />
                 ))}
