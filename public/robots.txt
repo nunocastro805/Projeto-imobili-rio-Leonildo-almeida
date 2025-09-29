@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://nunocastro805.github.io/Projeto-imobili-rio-Leonildo-almeida/sitemap.xml
